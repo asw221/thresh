@@ -1,0 +1,12 @@
+
+useDynLib(thresh)
+
+import(RcppEigen)
+importFrom(Rcpp, sourceCpp)
+
+
+export(btlm, btlm.adapt, btlm.fit, coef.btlm)
+
+
+
+
