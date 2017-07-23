@@ -31,6 +31,9 @@ public:
     setKernel(Kern);
   };
 
+
+  // Sets the data used to update the jumping kernel to 0. Does NOT
+  // zero the kernel itself nor the kernel scaling constant
   void clear() {
     p = 0.0;
     n = 0;

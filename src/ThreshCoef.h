@@ -121,9 +121,10 @@ public:
     //   walk.updateKernel();
     if (p > 0.05 && p < 0.7)
       walk.updateKernel();
-    else
-      walk.clear();
+    // else
+    //   walk.clear();
     walk.setScale(newScale);
+    walk.clear();
   };
 
   Eigen::SparseVector< double > getSparseCoefs(const double &lambda) const {

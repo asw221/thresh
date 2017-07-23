@@ -35,22 +35,31 @@ The \code{control} list allows tuning of specified default parameters,
 including: \code{n.sims} (default = 10000), the total number of MCMC
 samples; \code{burnin} (default = 5000), the total number of samples
 to discard from the beginning of the chain; \code{n.save} (default = 1000),
-the total number of samples to retain from simulations; \code{alpha.tau}
+the total number of samples to retain from simulations; \code{mu}
+(default = 0) and \code{phi.sq} (default = 0.001), prior mean and precision
+parameters for the \eqn{\alpha_j}{\alpha[j]}'s;
+\code{alpha.tau}
 (default = 0.1) and \code{beta.tau} (default = 1e-6), prior shape and rate
 parameters for the Gamma-distributed residual precision parameter,
 \eqn{\tau^2}; and \code{rng.seed}, an integer-valued random seed.
 
-In addition, there's another \code{control} parameter, \code{block}
-(default = 200), which controls how often Metropolis-Hastings jumping
+In addition, there's another set of \code{control} parameters,
+\code{warmup} (default = 10000) and \code{block} (default = 500).
+These control how often Metropolis-Hastings jumping
 kernels are updated. Kernels are adaptively updated every \code{block}'th
-iteration during the \code{burnin} period in order to control jumping
-rates for more accurate and efficient simulations.
+iteration during the \code{warmup} period in order to control jumping
+rates for more accurate and efficient simulation. \code{warmup}
+iterations will terminate early as jumping rates approach 30\%.
 
 Prior specification for the fitted model follows the heirarchy:
 
-\deqn{y_i \sim N(\mu_i, \tau^{-2})}{y[i] ~ N(\mu[i], 1 / \tau^2)}
-\deqn{\mu_i = \alpha_0 + \Sum_{j = 1}^{P} X_{ij} I(|\alpha_j| > \lambda) \alpha_j}{\mu[i] = \alpha[0] + \Sum_j X[ij] * I(|\alpha[j]| > \lambda) * \alpha[j]}
-\deqn{\alpha_j \sim N(0, 1000)}{\alpha[j] ~ N(0, 1000)}
-\deqn{\tau^{-2} = \sigma^2 \sim Gamma(\alpha_{\tau}, \beta_{\tau})}{1 / \tau^2 = \sigma^2 ~ Gamma(\alpha[\tau], \beta[\tau])}
+\deqn{y_i \sim N(\theta_i, \tau^{-2})}{y[i] ~ N(\theta[i], 1 / \tau^2)}
+\deqn{\theta_i = \alpha_0 + \Sum_{j = 1}^{P} X_{ij} I(|\alpha_j| > \lambda) \alpha_j}{\theta[i] = \alpha[0] + \Sum_j X[ij] * I(|\alpha[j]| > \lambda) * \alpha[j]}
+\deqn{\alpha_j \sim N(\mu, \phi^{-2})}{\alpha[j] ~ N(\mu, 1 / \phi^2)}
+\deqn{\tau^2 \sim Gamma(\alpha_{\tau}, \beta_{\tau})}{\tau^2 ~ Gamma(\alpha[\tau], \beta[\tau])}
 \deqn{\lambda \sim Unif(0, M)}{\lambda ~ Unif(0, M)}
+
+Where \eqn{M > 0} is some upper bound on \eqn{\lambda}. By default,
+the program takes \eqn{M} to be the maximum absolute univariate coefficient
+regressing \eqn{y} on the columns of \eqn{X} one at a time.
 }
