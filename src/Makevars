@@ -1,4 +1,4 @@
 
 PKG_FLAGS="`${R_HOME}/bin/Rscript -e 'Rcpp:::CxxFlags()'` `${R_HOME}/bin/Rscript -e 'RcppEigen:::CxxFlags()'`"
 
-CXX_STD = -std=c++11
+PKG_CXXFLAGS = -std=c++11
