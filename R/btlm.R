@@ -2,8 +2,8 @@
 #' @title Bayesian Thresholded Linear Models
 #'
 #' @description
-#' Fit a bayesian linear model with thresholded priors for simultaneous
-#' variable selection and point estimation.
+#' Fit a bayesian thresholded linear model for simultaneous
+#' variable selection and coefficient estimation.
 #'
 #' @param formula
 #' an R formula for design specification
@@ -18,10 +18,26 @@
 #' an optional function given to handle missing data
 #' cases
 #'
-#' @param control an optional list to control MCMC related parameters. See
-#'   "Details"
+#' @param control
+#' an optional list to control MCMC related parameters. See "Details"
+#'
+#' @param x
+#' the design matrix (optional alternative to \code{formula};
+#' See "Details")
+#'
+#' @param y
+#' response data (optional alternative to \code{formula};
+#' See "Details")
+#'
 #'
 #' @details
+#' Althought the standard R \code{formula} interface is available for model
+#' specification, \code{btlm} also allows to pass the design and response
+#' data in directly as arguments \code{x} and \code{y}, respectively.
+#' This is recommended if \code{x} is large as newer versions of R won't
+#' automatically make a copy of \code{x}. \code{subset}, \code{na.action}
+#' parameters, etc. are ignored in this case, however.
+#'
 #' The \code{control} list allows tuning of specified default parameters,
 #' including: \code{n.sims} (default = 10000), the total number of MCMC
 #' samples; \code{burnin} (default = 5000), the total number of samples
@@ -61,17 +77,27 @@
 #'
 
 btlm <- function(formula, data, subset, na.action,
-                 control = list(), ...
+                 control = list(), x = NULL, y = NULL, ...
                  ) {
   mf <- match.call(expand.dots = FALSE)
-  m <- match(c("formula", "data", "subset", "na.action"), names(mf), 0)
-  mf <- mf[c(1, m)]
-  mf$drop.unused.levels <- TRUE
-  mf[[1]] <- quote(stats::model.frame)
-  mf <- eval(mf, parent.frame())
-  mt <- attr(mf, "terms")
-  y <- model.response(mf, "numeric")
-  X <- model.matrix(mt, mf)
+  if (!missing(formula)) {
+    m <- match(c("formula", "data", "subset", "na.action"), names(mf), 0)
+    mf <- mf[c(1, m)]
+    mf$drop.unused.levels <- TRUE
+    mf[[1]] <- quote(stats::model.frame)
+    mf <- eval(mf, parent.frame())
+    mt <- attr(mf, "terms")
+    y <- model.response(mf, "numeric")
+    x <- model.matrix(mt, mf)
+  }
+  else if (!is.null(x) && !is.null(y)) {
+    y <- drop(y)
+    n <- ifelse(is.null(dim(y)), length(y), nrow(y))
+    if (!is.matrix(x))
+      x <- as.matrix(x)  ## bit too hack-y?
+    if (n != nrow(x))
+      stop (n, "observations in y do not match", nrow(x), "rows of x")
+  }
   con <- list(n.sims = 10000, burnin = 5000, n.save = 1000,
               warmup = 10000, block = 500,
               mu = 0, phi.sq = 0.001, alpha.tau = 0.1, beta.tau = 1e-6,
@@ -81,7 +107,8 @@ btlm <- function(formula, data, subset, na.action,
   con[(namc <- names(control))] <- control
   if (length(noNms <- namc[!(namc %in% nmsC)]))
     warning ("unknown names in control: ", paste(noNms, collapse = ", "))
-  fit <- .Call("bayesTLM", X, y,
+  ## cat ("Beginning model fitting. Memory usage is "); print (mem_used())
+  fit <- .Call("bayesTLM", x, y,
         con$mu, con$phi.sq, con$alpha.tau, con$beta.tau,
         con$n.sims, con$burnin, con$n.save,
         con$warmup, con$block, con$rng.seed,

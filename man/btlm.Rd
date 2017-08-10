@@ -5,7 +5,8 @@
 \alias{btlm.adapt}
 \title{Bayesian Thresholded Linear Models}
 \usage{
-btlm(formula, data, subset, na.action, control = list(), ...)
+btlm(formula, data, subset, na.action, control = list(), x = NULL,
+  y = NULL, ...)
 
 btlm.adapt(formula, data, subset, na.action, control = list(), ...)
 }
@@ -19,18 +20,30 @@ btlm.adapt(formula, data, subset, na.action, control = list(), ...)
 \item{na.action}{an optional function given to handle missing data
 cases}
 
-\item{control}{an optional list to control MCMC related parameters. See
-"Details"}
+\item{control}{an optional list to control MCMC related parameters. See "Details"}
+
+\item{x}{the design matrix (optional alternative to \code{formula};
+See "Details")}
+
+\item{y}{response data (optional alternative to \code{formula};
+See "Details")}
 }
 \value{
 An object of class \code{"btlm"} listing simulation output
 and estimated parameter values.
 }
 \description{
-Fit a bayesian linear model with thresholded priors for simultaneous
-variable selection and point estimation.
+Fit a bayesian thresholded linear model for simultaneous
+variable selection and coefficient estimation.
 }
 \details{
+Althought the standard R \code{formula} interface is available for model
+specification, \code{btlm} also allows to pass the design and response
+data in directly as arguments \code{x} and \code{y}, respectively.
+This is recommended if \code{x} is large as newer versions of R won't
+automatically make a copy of \code{x}. \code{subset}, \code{na.action}
+parameters, etc. are ignored in this case, however.
+
 The \code{control} list allows tuning of specified default parameters,
 including: \code{n.sims} (default = 10000), the total number of MCMC
 samples; \code{burnin} (default = 5000), the total number of samples
